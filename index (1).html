@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedPhys Lab System 2026 - Система управления медицинской физикой</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Экран авторизации -->
+    <div id="authScreen" class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>🩺 MedPhys Lab System</h1>
+                <p>Информационная система кафедры технической физики</p>
+            </div>
+            
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="switchAuthTab('login')">Вход</button>
+                <button class="tab-btn" onclick="switchAuthTab('register')">Регистрация</button>
+            </div>
+
+            <!-- Форма входа -->
+            <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>📧 Email</label>
+                    <input type="email" id="loginEmail" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label>🔒 Пароль</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label>👤 Роль</label>
+                    <select id="loginRole" required>
+                        <option value="">Выберите роль...</option>
+                        <option value="student">Студент</option>
+                        <option value="teacher">Преподаватель</option>
+                    </select>
+                </div>
+                <button type="submit" class="auth-btn">Войти</button>
+                <p class="demo-hint">📌 Демо: email любой, пароль: demo, роль: Student</p>
+            </form>
+
+            <!-- Форма регистрации -->
+            <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>👤 Полное имя</label>
+                    <input type="text" id="registerName" placeholder="Иван Иванов" required>
+                </div>
+                <div class="form-group">
+                    <label>📧 Email</label>
+                    <input type="email" id="registerEmail" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label>🔒 Пароль</label>
+                    <input type="password" id="registerPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label>👤 Роль</label>
+                    <select id="registerRole" required>
+                        <option value="">Выберите роль...</option>
+                        <option value="student">Студент</option>
+                        <option value="teacher">Преподаватель</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>🎓 Группа/Кафедра</label>
+                    <input type="text" id="registerGroup" placeholder="ИСТ-2022 / Техническая физика" required>
+                </div>
+                <button type="submit" class="auth-btn">Зарегистрироваться</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Главное приложение -->
+    <div id="mainApp" class="app-hidden">
+        <!-- Шапка -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>🩺 MedPhys Lab System 2026</h1>
+                <div class="header-right">
+                    <div class="user-info">
+                        <span id="userGreeting">Добро пожаловать!</span>
+                        <span id="userRole" class="role-badge"></span>
+                    </div>
+                    <button class="logout-btn" onclick="handleLogout()">Выход</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Боковое меню -->
+        <nav class="sidebar">
+            <div class="menu-section">
+                <h3>📚 Основное</h3>
+                <a href="#" onclick="showSection('dashboard')" class="menu-item active">📊 Панель управления</a>
+                <a href="#" onclick="showSection('calculators')" class="menu-item">🧮 Калькуляторы</a>
+                <a href="#" onclick="showSection('laboratories')" class="menu-item">🔬 Виртуальные лабораторий</a>
+            </div>
+
+            <div class="menu-section">
+                <h3>📊 Анализ</h3>
+                <a href="#" onclick="showSection('statistics')" class="menu-item">📈 Статистика</a>
+                <a href="#" onclick="showSection('journal')" class="menu-item">📂 Журнал работ</a>
+            </div>
+
+            <div class="menu-section">
+                <h3>ℹ️ Справка</h3>
+                <a href="#" onclick="showSection('handbook')" class="menu-item">📚 Справочник</a>
+                <a href="#" onclick="showSection('assistant')" class="menu-item">🤖 Помощник</a>
+            </div>
+        </nav>
+
+        <!-- Главное содержание -->
+        <main class="main-content">
+            <!-- Панель управления -->
+            <section id="dashboard" class="content-section active">
+                <h2>📊 Панель управления</h2>
+                <div class="dashboard-grid">
+                    <div class="stat-card">
+                        <h3>✅ Завершено работ</h3>
+                        <p class="stat-number" id="completedLabs">0</p>
+                        <p class="stat-label">лабораторных работ</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>⏳ В процессе</h3>
+                        <p class="stat-number" id="inProgressLabs">0</p>
+                        <p class="stat-label">активных работ</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>⭐ Средняя оценка</h3>
+                        <p class="stat-number" id="avgGrade">5.0</p>
+                        <p class="stat-label">из 5.0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>📚 Часов обучения</h3>
+                        <p class="stat-number" id="totalHours">24</p>
+                        <p class="stat-label">всего</p>
+                    </div>
+                </div>
+
+                <div class="info-panels">
+                    <div class="info-panel">
+                        <h3>📌 Последние новости кафедры</h3>
+                        <ul>
+                            <li>🎓 Обновлена база данных оборудования МРТ</li>
+                            <li>📝 Новые методические указания по защите от излучения</li>
+                            <li>🔬 Добавлены виртуальные работы по дозиметрии</li>
+                        </ul>
+                    </div>
+                    <div class="info-panel">
+                        <h3>🎯 Быстрые ссылки</h3>
+                        <div class="quick-links">
+                            <button class="quick-link" onclick="showSection('calculators')">Доза облучения</button>
+                            <button class="quick-link" onclick="showSection('laboratories')">Начать лабораторию</button>
+                            <button class="quick-link" onclick="showSection('handbook')">Физические константы</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Раздел калькуляторов -->
+            <section id="calculators" class="content-section">
+                <h2>🧮 Физические калькуляторы</h2>
+                <div class="calculators-grid">
+                    <div class="calculator-card" onclick="openCalculator('dose')">
+                        <h3>☢️ Доза облучения</h3>
+                        <p>Расчёт поглощённой дозы и эквивалентной дозы</p>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="calculator-card" onclick="openCalculator('attenuation')">
+                        <h3>📉 Закон ослабления</h3>
+                        <p>Интенсивность излучения после прохождения через вещество</p>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="calculator-card" onclick="openCalculator('photon')">
+                        <h3>💡 Энергия фотона</h3>
+                        <p>E = hf, связь частоты и энергии</p>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="calculator-card" onclick="openCalculator('wavelength')">
+                        <h3>〰️ Длина волны</h3>
+                        <p>λ = c/f, вычисление длины волны</p>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="calculator-card" onclick="openCalculator('frequency')">
+                        <h3>📊 Частота излучения</h3>
+                        <p>f = c/λ, расчёт частоты</p>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="calculator-card" onclick="openCalculator('halflife')">
+                        <h3>⚛️ Период полураспада</h3>
+                        <p>N(t) = N₀·(1/2)^(t/T), радиоактивный распад</p>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="calculator-card" onclick="openCalculator('doserate')">
+                        <h3>⚡ Мощность дозы</h3>
+                        <p>Доза облучения в единицу времени</p>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="calculator-card" onclick="openCalculator('activity')">
+                        <h3>🔴 Активность источника</h3>
+                        <p>A = λN, количество распадов в секунду</p>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="calculator-card" onclick="openCalculator('cumulative')">
+                        <h3>📈 Накопленная доза</h3>
+                        <p>Интегральное воздействие дозы во времени</p>
+                        <span class="arrow">→</span>
+                    </div>
+                    <div class="calculator-card" onclick="openCalculator('shielding')">
+                        <h3>🛡️ Коэффициент защиты</h3>
+                        <p>Эффективность защиты от излучения</p>
+                        <span class="arrow">→</span>
+                    </div>
+                </div>
+
+                <!-- Модальное окно для калькулятора -->
+                <div id="calculatorModal" class="modal" style="display:none;">
+                    <div class="modal-content">
+                        <span class="close" onclick="closeCalculator()">&times;</span>
+                        <div id="calculatorContent"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Виртуальные лабораторий -->
+            <section id="laboratories" class="content-section">
+                <h2>🔬 Виртуальные лабораторий</h2>
+                <div class="labs-grid">
+                    <div class="lab-card">
+                        <h3>🩻 Лаб. 1: Дозиметрия рентгеновского излучения</h3>
+                        <p>Измерение и анализ доз при рентгеновском обследовании</p>
+                        <div class="lab-status">
+                            <span class="status-badge completed">✅ Завершена</span>
+                            <span class="grade">Оценка: 5.0</span>
+                        </div>
+                        <button class="lab-btn" onclick="startLab('lab1')">Открыть</button>
+                    </div>
+                    <div class="lab-card">
+                        <h3>🧲 Лаб. 2: Радиационная безопасность МРТ</h3>
+                        <p>Анализ магнитных полей и радиационной безопасности</p>
+                        <div class="lab-status">
+                            <span class="status-badge in-progress">⏳ В процессе</span>
+                        </div>
+                        <button class="lab-btn" onclick="startLab('lab2')">Продолжить</button>
+                    </div>
+                    <div class="lab-card">
+                        <h3>🔬 Лаб. 3: Измерение активности изотопов</h3>
+                        <p>Практическая работа по определению активности радиоактивных источников</p>
+                        <div class="lab-status">
+                            <span class="status-badge pending">⏱️ Не начата</span>
+                        </div>
+                        <button class="lab-btn" onclick="startLab('lab3')">Начать</button>
+                    </div>
+                    <div class="lab-card">
+                        <h3>💉 Лаб. 4: Дозировка в ядерной медицине</h3>
+                        <p>Расчёт оптимальных доз радиофармпрепаратов</p>
+                        <div class="lab-status">
+                            <span class="status-badge pending">⏱️ Не начата</span>
+                        </div>
+                        <button class="lab-btn" onclick="startLab('lab4')">Начать</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Журнал лабораторий -->
+            <section id="journal" class="content-section">
+                <h2>📂 Электронный журнал</h2>
+                <div class="journal-controls">
+                    <input type="text" id="journalSearch" placeholder="🔍 Поиск по названию..." class="search-input">
+                    <select id="journalFilter" class="filter-select">
+                        <option value="">Все статусы</option>
+                        <option value="completed">✅ Завершены</option>
+                        <option value="in-progress">⏳ В процессе</option>
+                        <option value="pending">⏱️ Не начаты</option>
+                    </select>
+                </div>
+                <table class="journal-table">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>Название работы</th>
+                            <th>Дата начала</th>
+                            <th>Статус</th>
+                            <th>Оценка</th>
+                            <th>Действие</th>
+                        </tr>
+                    </thead>
+                    <tbody id="journalTable">
+                        <tr>
+                            <td>1</td>
+                            <td>Дозиметрия рентгеновского излучения</td>
+                            <td>15.01.2026</td>
+                            <td><span class="status completed">✅ Завершена</span></td>
+                            <td>5.0</td>
+                            <td><button class="action-btn" onclick="viewReport(1)">📄 Отчёт</button></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>Радиационная безопасность МРТ</td>
+                            <td>22.01.2026</td>
+                            <td><span class="status in-progress">⏳ В процессе</span></td>
+                            <td>—</td>
+                            <td><button class="action-btn" onclick="viewReport(2)">📝 Редакт.</button></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Измерение активности изотопов</td>
+                            <td>01.02.2026</td>
+                            <td><span class="status pending">⏱️ Не начата</span></td>
+                            <td>—</td>
+                            <td><button class="action-btn" onclick="startLab('lab3')">🚀 Начать</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Статистика -->
+            <section id="statistics" class="content-section">
+                <h2>📈 Анализ результатов</h2>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>Оценки по лабораториям</h3>
+                        <canvas id="gradesChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Распределение времени</h3>
+                        <canvas id="timeChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Прогресс обучения</h3>
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <h3>Успешность по темам</h3>
+                        <canvas id="topicsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Справочник -->
+            <section id="handbook" class="content-section">
+                <h2>📚 Справочник по медицинской физике</h2>
+                <div class="handbook-content">
+                    <div class="handbook-section">
+                        <h3>⚛️ Физические константы</h3>
+                        <table class="reference-table">
+                            <tr>
+                                <th>Название</th>
+                                <th>Обозначение</th>
+                                <th>Значение</th>
+                                <th>Единица</th>
+                            </tr>
+                            <tr>
+                                <td>Постоянная Планка</td>
+                                <td>h</td>
+                                <td>6.626 × 10⁻³⁴</td>
+                                <td>Дж·с</td>
+                            </tr>
+                            <tr>
+                                <td>Скорость света</td>
+                                <td>c</td>
+                                <td>2.998 × 10⁸</td>
+                                <td>м/с</td>
+                            </tr>
+                            <tr>
+                                <td>Заряд электрона</td>
+                                <td>e</td>
+                                <td>1.602 × 10⁻¹⁹</td>
+                                <td>Кл</td>
+                            </tr>
+                            <tr>
+                                <td>Масса электрона</td>
+                                <td>mₑ</td>
+                                <td>9.109 × 10⁻³¹</td>
+                                <td>кг</td>
+                            </tr>
+                            <tr>
+                                <td>Постоянная Авогадро</td>
+                                <td>Nₐ</td>
+                                <td>6.022 × 10²³</td>
+                                <td>моль⁻¹</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="handbook-section">
+                        <h3>🩺 Радиационные единицы</h3>
+                        <table class="reference-table">
+                            <tr>
+                                <th>Величина</th>
+                                <th>Единица СИ</th>
+                                <th>Внесистемная единица</th>
+                                <th>Соотношение</th>
+                            </tr>
+                            <tr>
+                                <td>Поглощённая доза</td>
+                                <td>Грей (Гр)</td>
+                                <td>Рад</td>
+                                <td>1 Гр = 100 рад</td>
+                            </tr>
+                            <tr>
+                                <td>Эквивалентная доза</td>
+                                <td>Зиверт (Зв)</td>
+                                <td>Бэр</td>
+                                <td>1 Зв = 100 бэр</td>
+                            </tr>
+                            <tr>
+                                <td>Активность</td>
+                                <td>Беккерель (Бк)</td>
+                                <td>Кюри (Ки)</td>
+                                <td>1 Ки = 3.7×10¹⁰ Бк</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="handbook-section">
+                        <h3>🏥 Оборудование медицинского центра</h3>
+                        <div class="equipment-grid">
+                            <div class="equipment-card">
+                                <h4>🩻 Рентгеновская установка</h4>
+                                <p><strong>Напряжение:</strong> 50-150 кВ</p>
+                                <p><strong>Мощность:</strong> 10-50 кВ</p>
+                                <p><strong>Доза:</strong> 5-50 мГр/мин</p>
+                            </div>
+                            <div class="equipment-card">
+                                <h4>🧲 МРТ сканер</h4>
+                                <p><strong>Поле:</strong> 1.5-3.0 Т</p>
+                                <p><strong>SAR:</strong> &lt;2 Вт/кг</p>
+                                <p><strong>Время:</strong> 30-60 мин</p>
+                            </div>
+                            <div class="equipment-card">
+                                <h4>🔬 КТ сканер</h4>
+                                <p><strong>Энергия:</strong> 80-140 кВ</p>
+                                <p><strong>CTDIvol:</strong> 10-15 мГр</p>
+                                <p><strong>Доза:</strong> 20-30 мГр</p>
+                            </div>
+                            <div class="equipment-card">
+                                <h4>🩺 УЗИ аппарат</h4>
+                                <p><strong>Частота:</strong> 2-18 МГц</p>
+                                <p><strong>Мощность:</strong> &lt;100 мВт/см²</p>
+                                <p><strong>Безопасный:</strong> Non-ionizing</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Помощник по медицинской физике -->
+            <section id="assistant" class="content-section">
+                <h2>🤖 Интеллектуальный помощник</h2>
+                <div class="assistant-container">
+                    <div class="assistant-chat" id="assistantChat">
+                        <div class="message assistant-message">
+                            <p>Привет! 👋 Я ваш помощник по медицинской физике. Я помогу вам:</p>
+                            <ul>
+                                <li>Объяснить физические концепции</li>
+                                <li>Помочь с расчётами дозировок</li>
+                                <li>Ответить на вопросы о радиационной безопасности</li>
+                                <li>Подсказать формулы и константы</li>
+                            </ul>
+                            <p>Что вас интересует?</p>
+                        </div>
+                    </div>
+                    <div class="assistant-input">
+                        <input type="text" id="userQuestion" placeholder="Ваш вопрос..." class="question-input">
+                        <button onclick="askAssistant()" class="ask-btn">Отправить</button>
+                    </div>
+                    <div class="quick-questions">
+                        <p><strong>Быстрые вопросы:</strong></p>
+                        <button class="quick-q" onclick="askPreset('what-is-dose')">Что такое доза излучения?</button>
+                        <button class="quick-q" onclick="askPreset('half-life-formula')">Формула периода полураспада?</button>
+                        <button class="quick-q" onclick="askPreset('radiation-safety')">Правила радиационной безопасности</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
